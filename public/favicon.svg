@@ -1,23 +1,19 @@
-cat << 'EOF' > public/favicon.svg
-   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
-     <defs>
-       <style>
-         .outer-frame { fill: none; stroke: #222222; stroke-width: 24; stroke-linecap: round; stroke-linejoin: round; }
-         .inner-top { fill: #1976D2; stroke: #222222; stroke-width: 14; stroke-linejoin: round; }
-         .inner-left { fill: #64B5F6; stroke: #222222; stroke-width: 14; stroke-linejoin: round; }
-         .inner-right { fill: #29B6F6; stroke: #222222; stroke-width: 24; stroke-linejoin: round; }
-         .connect-wire { fill: none; stroke: #222222; stroke-width: 24; stroke-linecap: round; stroke-linejoin: round; }
-       </style>
-     </defs>
-     <polygon class="inner-top" points="256,128 346,180 256,232 166,180" />
-     <polygon class="inner-left" points="166,180 256,232 256,336 166,284" />
-     <polygon class="inner-right" points="256,232 346,180 346,284 256,336" />
-     <line class="connect-wire" x1="256" y1="28" x2="256" y2="128" />
-     <line class="connect-wire" x1="60" y1="142" x2="166" y2="180" />
-     <line class="connect-wire" x1="452" y1="142" x2="346" y2="180" />
-     <line class="connect-wire" x1="256" y1="484" x2="256" y2="336" />
-     <line class="connect-wire" x1="60" y1="370" x2="166" y2="284" />
-     <line class="connect-wire" x1="452" y1="370" x2="346" y2="284" />
-     <polygon class="outer-frame" points="256,28 452,142 452,370 256,484 60,370 60,142" />
-   </svg>
-   EOF
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 512 512" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;">
+    <path d="M60,370L167,294" style="fill:none;fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:24px;"/>
+    <path d="M256,28L256,140" style="fill:none;fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:24px;"/>
+    <g transform="matrix(1,0,0,1,1,12)">
+        <path d="M256,128L346,180L256,232L166,180L256,128Z" style="fill:rgb(25,118,210);fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:14px;stroke-linecap:butt;"/>
+    </g>
+    <g transform="matrix(1,0,0,1,1,12)">
+        <path d="M166,180L256,232L256,336L166,284L166,180Z" style="fill:rgb(100,181,246);fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:14px;stroke-linecap:butt;"/>
+    </g>
+    <g transform="matrix(0.974921,-0.008991,-0.008991,0.996777,2.781388,0.997101)">
+        <path d="M60,142L172.331,199.119" style="fill:none;fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:24px;"/>
+    </g>
+    <path d="M256,28L452,142L452,370L256,484L60,370L60,142L256,28Z" style="fill:none;fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:24px;"/>
+    <g transform="matrix(2.066667,0,0,2.102564,-266.066667,-228.461538)">
+        <path d="M256,232L346,180L346,284L256,336L256,232Z" style="fill:rgb(41,182,246);fill-rule:nonzero;stroke:rgb(34,34,34);stroke-width:11.82px;stroke-linecap:butt;"/>
+    </g>
+</svg>
