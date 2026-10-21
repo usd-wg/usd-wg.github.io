@@ -3,47 +3,240 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('blog')).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
+const baseUrl = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+// Fetch the 2 most recent blog posts as highlights on the landing page
+const recentPosts = (await getCollection('blog'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 2);
+
+const subGroups = [
+  {
+    id: 'camera',
+    title: 'Camera',
+    tag: 'wg-usd-camera',
+    objective: 'Standardizing a unified, physically-accurate Camera schema to streamline CG and virtual production pipelines.',
+    slack: 'https://aswf.slack.com/messages/wg-usd-camera',
+    accent: 'border-sky-200 bg-sky-50 text-sky-800'
+  },
+  {
+    id: 'assets',
+    title: 'Assets',
+    tag: 'wg-usd-assets',
+    objective: 'Guiding asset interchange, structuring, and URI resolution to strengthen the "Universal" in USD.',
+    slack: 'https://aswf.slack.com/messages/wg-usd-assets',
+    accent: 'border-emerald-200 bg-emerald-50 text-emerald-800'
+  },
+  {
+    id: 'games',
+    title: 'Games & Real-Time',
+    tag: 'wg-usd-games',
+    objective: 'Advancing real-time runtime composition, payload streaming, and engine integration across Unreal, Unity, and custom engines.',
+    slack: 'https://aswf.slack.com/messages/wg-usd-games',
+    accent: 'border-purple-200 bg-purple-50 text-purple-800'
+  },
+  {
+    id: 'materials',
+    title: 'MaterialX & Surface Shading',
+    tag: 'wg-usd-materialx',
+    objective: 'Fostering deep interoperability between USD imaging runtimes, Hydra 2.0 delegates, and open MaterialX shaders.',
+    slack: 'https://aswf.slack.com/messages/wg-usd-materialx',
+    accent: 'border-pink-200 bg-pink-50 text-pink-800'
+  },
+  {
+    id: 'web',
+    title: 'Web Visualization',
+    tag: 'wg-usd-web',
+    objective: 'Compiling USD core to WebAssembly, optimizing in-browser streaming, and driving canvas-level Hydra viewports.',
+    slack: 'https://aswf.slack.com/messages/wg-usd-web',
+    accent: 'border-blue-200 bg-blue-50 text-blue-800'
+  }
+];
 ---
 
-<Layout title="USD WG - Technical Notes & Specs">
-  <div class="space-y-8">
-    <div class="border-b border-zinc-200 pb-4 flex items-center justify-between">
-      <h1 class="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">Working Group Technical Notes</h1>
-      <span class="text-xs font-mono text-zinc-500">Spec: OpenUSD 24.11+</span>
-    </div>
+<Layout title="USD WG - Academy Software Foundation">
+  <div class="space-y-12">
+    <!-- Hero / Mission Statement -->
+    <section class="bg-white rounded-2xl border border-zinc-200 p-8 sm:p-12 shadow-xs">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 mb-6 font-mono">
+        <span>Academy Software Foundation (ASWF)</span>
+        <span class="text-zinc-400">•</span>
+        <span>Open Collaboration</span>
+      </div>
 
-    {posts.map(post => (
-      <article class="bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs hover:border-zinc-300 transition-colors">
-        <div class="flex items-center gap-2 mb-3 text-xs">
-          <span class="px-2.5 py-0.5 rounded-full font-semibold bg-purple-100 text-purple-800 border border-purple-200 uppercase font-mono">
-            {post.data.group}
-          </span>
-          <span class="text-zinc-400">•</span>
-          <time class="text-zinc-500 font-mono">
-            {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
-          </time>
+      <h1 class="text-3xl sm:text-5xl font-black text-zinc-900 tracking-tight leading-tight mb-6">
+        Advancing the OpenUSD Standard for Real-Time &amp; Production Graphics
+      </h1>
+
+      <p class="text-lg sm:text-xl text-zinc-600 leading-relaxed font-normal max-w-3xl mb-8">
+        The OpenUSD Working Group brings together developers, technical directors, and pipeline architects from across film, games, spatial computing, and open-source tooling. We collaborate openly to ensure Universal Scene Description remains an extensible, resilient standard for 3D interchange.
+      </p>
+
+      <div class="flex items-center gap-3 flex-wrap">
+        <a
+          href={`${baseUrl}calendar`}
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-900 text-white font-medium text-sm hover:bg-zinc-800 transition-colors shadow-xs"
+        >
+          <svg class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span>Meeting Calendar</span>
+        </a>
+
+        <a
+          href={`${baseUrl}blog`}
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-50 text-blue-800 font-medium text-sm hover:bg-blue-100 transition-colors border border-blue-200"
+        >
+          <span>Technical Notes &amp; RFCs</span>
+          <span class="text-blue-500 font-mono text-xs">&rarr;</span>
+        </a>
+
+        <a
+          href="https://slack.aswf.io/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-zinc-100 text-zinc-800 font-medium text-sm hover:bg-zinc-200 transition-colors border border-zinc-200"
+        >
+          <span>Join ASWF Slack</span>
+          <span class="text-zinc-400 font-mono text-xs">&rarr;</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Sub-Working Groups Grid -->
+    <section id="subgroups" class="space-y-6">
+      <div class="flex items-center justify-between border-b border-zinc-200 pb-3">
+        <div>
+          <h2 class="text-xl font-bold text-zinc-900">Interest &amp; Sub-Working Groups</h2>
+          <p class="text-sm text-zinc-500 mt-0.5">Specialized tracks focusing on targeted schema proposals and pipeline interoperability.</p>
+        </div>
+        <span class="text-xs font-mono text-zinc-400 hidden sm:inline">5 Active Focus Areas</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {subGroups.map((group) => (
+          <div class="bg-white rounded-xl border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-300 transition-all shadow-xs">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <h3 class="font-bold text-zinc-900 text-lg">{group.title}</h3>
+                <span class={`text-[11px] font-mono px-2 py-0.5 rounded border ${group.accent}`}>
+                  #{group.tag}
+                </span>
+              </div>
+              <p class="text-sm text-zinc-600 leading-relaxed mb-6">
+                {group.objective}
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-zinc-100 flex items-center justify-between text-xs">
+              <a
+                href={group.slack}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              >
+                <span>Slack Channel</span>
+                <span>&rarr;</span>
+              </a>
+              <span class="text-zinc-400 font-mono">ASWF Hosted</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Recent Technical Notes Teaser Section -->
+    {recentPosts.length > 0 && (
+      <section class="space-y-4">
+        <div class="flex items-center justify-between border-b border-zinc-200 pb-3">
+          <div>
+            <h2 class="text-xl font-bold text-zinc-900">Recent Technical Working Notes</h2>
+            <p class="text-sm text-zinc-500 mt-0.5">Latest architectural proposals and schema write-ups.</p>
+          </div>
+          <a href={`${baseUrl}blog`} class="text-xs font-semibold text-blue-600 hover:underline">
+            View all ({recentPosts.length}+) &rarr;
+          </a>
         </div>
 
-        <h2 class="text-xl sm:text-2xl font-extrabold text-zinc-900 mb-2">
-          <a href={`/blog/${post.id}`} class="hover:text-blue-600 transition-colors">
-            {post.data.title}
-          </a>
-        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {recentPosts.map((post) => (
+            <a
+              href={`${baseUrl}blog/${post.id}`}
+              class="block bg-white p-6 rounded-xl border border-zinc-200 hover:border-blue-400 hover:shadow-xs transition-all group"
+            >
+              <div class="flex items-center justify-between text-xs text-zinc-400 mb-2 font-mono">
+                <span class="text-purple-700 font-bold uppercase font-sans">{post.data.group}</span>
+                <span>{post.data.pubDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+              </div>
+              <h3 class="text-base font-bold text-zinc-900 group-hover:text-blue-600 transition-colors mb-2">
+                {post.data.title}
+              </h3>
+              <p class="text-xs text-zinc-600 line-clamp-2 leading-relaxed">
+                {post.data.description}
+              </p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
 
-        <p class="text-zinc-600 leading-relaxed text-sm mb-4">
-          {post.data.description}
-        </p>
-
-        <div class="flex items-center justify-between text-xs pt-4 border-t border-zinc-100">
-          <span class="text-zinc-500">By {post.data.author}</span>
-          <a href={`/blog/${post.id}`} class="font-semibold text-blue-600 hover:text-blue-700">
-            Read note &rarr;
+    <!-- Get Involved & Community Callout -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-zinc-50 rounded-2xl border border-zinc-200 p-6 sm:p-8 flex flex-col justify-between">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-4">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+            Bi-Weekly Community Sync
+          </div>
+          <h3 class="text-xl font-bold text-zinc-900 mb-2">Every other Wednesday at 1:00 PM PT</h3>
+          <p class="text-sm text-zinc-600 leading-relaxed mb-4">
+            Open syncs review schema RFCs, coordinate reference implementations, share production case studies, and address cross-industry requirements.
+          </p>
+        </div>
+        <div>
+          <a
+            href={`${baseUrl}calendar`}
+            class="text-xs font-semibold text-zinc-900 hover:underline flex items-center gap-1"
+          >
+            <span>View rolling calendar &amp; Zoom coordinates</span>
+            <span>&rarr;</span>
           </a>
         </div>
-      </article>
-    ))}
+      </div>
+
+      <div class="bg-zinc-50 rounded-2xl border border-zinc-200 p-6 sm:p-8 flex flex-col justify-between">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200 mb-4 font-mono">
+            Get Involved
+          </div>
+          <h3 class="text-xl font-bold text-zinc-900 mb-2">Participate in the Working Group</h3>
+          <ul class="text-sm text-zinc-600 space-y-2 mb-4">
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Join ASWF Slack:</strong> Find dedicated discussion channels for each subgroup.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Contribute Notes &amp; Schemas:</strong> Propose updates to schemas and tooling guidelines.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-blue-600 font-bold">•</span>
+              <span><strong>Attend Working Syncs:</strong> Join Zoom calls to discuss blockers and integrations live.</span>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <a
+            href="https://slack.aswf.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
+          >
+            <span>Request an ASWF Slack invitation</span>
+            <span>&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
   </div>
 </Layout>

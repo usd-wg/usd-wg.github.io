@@ -1,0 +1,111 @@
+---
+// src/pages/blog/index.astro
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+
+const baseUrl = import.meta.env.BASE_URL.replace(/\/?$/, '/');
+
+const groupBadgeStyles: Record<string, string> = {
+  games: 'bg-purple-100 text-purple-800 border-purple-200',
+  camera: 'bg-sky-100 text-sky-800 border-sky-200',
+  assets: 'bg-emerald-100 text-emerald-800 border-emerald-200',
+  materials: 'bg-pink-100 text-pink-800 border-pink-200',
+  web: 'bg-blue-100 text-blue-800 border-blue-200',
+  main: 'bg-amber-100 text-amber-800 border-amber-200'
+};
+---
+
+<Layout title="Technical Notes & Working RFCs - USD WG">
+  <div class="space-y-8">
+    <!-- Header banner -->
+    <div class="border-b border-zinc-200 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 font-mono">
+            OpenUSD Working Notes
+          </span>
+          <span class="text-xs text-zinc-400 font-mono">RFCs &amp; Architecture</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-zinc-900 tracking-tight">
+          Working Group Technical Notes
+        </h1>
+        <p class="text-sm text-zinc-500 mt-1">
+          Proposals, runtime benchmarks, schema drafting notes, and deep dives from active sub-committees.
+        </p>
+      </div>
+
+      <div class="text-xs font-mono text-zinc-500 bg-zinc-100 border border-zinc-200 px-3 py-1.5 rounded-lg shrink-0">
+        Spec Ref: <span class="font-semibold text-zinc-800">OpenUSD 24.11+</span>
+      </div>
+    </div>
+
+    <!-- Posts list -->
+    <div class="space-y-6">
+      {posts.length === 0 ? (
+        <div class="bg-white rounded-2xl border border-zinc-200 p-12 text-center text-zinc-500 text-sm">
+          No articles published yet. Add markdown posts to <code class="bg-zinc-100 px-1.5 py-0.5 rounded text-xs font-mono">src/content/blog/</code>.
+        </div>
+      ) : (
+        posts.map((post) => {
+          const badgeClass = groupBadgeStyles[post.data.group] || 'bg-zinc-100 text-zinc-800 border-zinc-200';
+          const postUrl = `${baseUrl}blog/${post.id}`;
+
+          return (
+            <article class="bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs hover:border-zinc-300 transition-all flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2.5 mb-3 text-xs">
+                  <span class={`px-2.5 py-0.5 rounded-full font-semibold border uppercase font-mono text-[11px] ${badgeClass}`}>
+                    {post.data.group}
+                  </span>
+                  <span class="text-zinc-400">•</span>
+                  <time class="text-zinc-500 font-mono">
+                    {post.data.pubDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </time>
+                  {post.data.tags && post.data.tags.length > 0 && (
+                    <>
+                      <span class="text-zinc-400 hidden sm:inline">•</span>
+                      <span class="text-zinc-400 hidden sm:inline font-mono">
+                        {post.data.tags.map(t => `#${t}`).join(' ')}
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <h2 class="text-xl sm:text-2xl font-extrabold text-zinc-900 mb-3 tracking-tight">
+                  <a href={postUrl} class="hover:text-blue-600 transition-colors">
+                    {post.data.title}
+                  </a>
+                </h2>
+
+                <p class="text-zinc-600 leading-relaxed text-sm sm:text-base mb-6">
+                  {post.data.description}
+                </p>
+              </div>
+
+              <div class="flex items-center justify-between text-xs pt-4 border-t border-zinc-100">
+                <span class="text-zinc-500">
+                  By <strong class="text-zinc-700 font-medium">{post.data.author}</strong>
+                </span>
+                <a 
+                  href={postUrl} 
+                  class="font-semibold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 group"
+                >
+                  <span>Read note</span>
+                  <span class="group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+                </a>
+              </div>
+            </article>
+          );
+        })
+      )}
+    </div>
+  </div>
+</Layout>
