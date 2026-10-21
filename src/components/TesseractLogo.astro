@@ -162,51 +162,129 @@
     gctx.lineCap = 'round'; gctx.lineJoin = 'round';
     gctx.strokeStyle = '#18181b'; gctx.fillStyle = '#18181b';
 
-    if (group.glyphType === 'games') {
-      gctx.lineWidth = 36;
-      gctx.beginPath();
-      gctx.roundRect(s * 0.16, s * 0.36, s * 0.68, s * 0.40, [42]);
-      gctx.stroke();
-      gctx.lineWidth = 26;
-      gctx.beginPath();
-      gctx.moveTo(s * 0.34, s * 0.46); gctx.lineTo(s * 0.34, s * 0.66);
-      gctx.moveTo(s * 0.24, s * 0.56); gctx.lineTo(s * 0.44, s * 0.56);
-      gctx.stroke();
-      gctx.beginPath();
-      gctx.arc(s * 0.64, s * 0.60, 18, 0, Math.PI * 2);
-      gctx.arc(s * 0.75, s * 0.52, 18, 0, Math.PI * 2);
-      gctx.fill();
-    } else if (group.glyphType === 'camera') {
-      gctx.lineWidth = 36;
-      gctx.beginPath();
-      gctx.moveTo(s * 0.20, s * 0.40); gctx.lineTo(s * 0.38, s * 0.40);
-      gctx.lineTo(s * 0.44, s * 0.30); gctx.lineTo(s * 0.56, s * 0.30);
-      gctx.lineTo(s * 0.62, s * 0.40); gctx.lineTo(s * 0.80, s * 0.40);
-      gctx.arcTo(s * 0.86, s * 0.40, s * 0.86, s * 0.46, 22);
-      gctx.lineTo(s * 0.86, s * 0.74);
-      gctx.arcTo(s * 0.86, s * 0.80, s * 0.80, s * 0.80, 22);
-      gctx.lineTo(s * 0.20, s * 0.80);
-      gctx.arcTo(s * 0.14, s * 0.80, s * 0.14, s * 0.74, 22);
-      gctx.lineTo(s * 0.14, s * 0.46);
-      gctx.arcTo(s * 0.14, s * 0.40, s * 0.20, s * 0.40, 22);
-      gctx.closePath(); gctx.stroke();
-      gctx.lineWidth = 32;
-      gctx.beginPath();
-      gctx.ellipse(s * 0.50, s * 0.60, s * 0.14, s * 0.17, 0, 0, Math.PI * 2);
-      gctx.stroke();
-      gctx.beginPath();
-      gctx.arc(s * 0.75, s * 0.48, 14, 0, Math.PI * 2);
-      gctx.fill();
-    } else {
-      gctx.lineWidth = 38;
-      gctx.beginPath();
-      gctx.arc(s * 0.50, s * 0.46, s * 0.27, 0.15 * Math.PI, 0.85 * Math.PI, false);
-      gctx.stroke();
-      gctx.beginPath();
-      gctx.ellipse(s * 0.35, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
-      gctx.ellipse(s * 0.65, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
-      gctx.fill();
+    switch (group.glyphType) {
+      case 'games':
+        // Gamepad Controller
+        gctx.lineWidth = 36;
+        gctx.beginPath();
+        gctx.roundRect(s * 0.16, s * 0.36, s * 0.68, s * 0.40, [42]);
+        gctx.stroke();
+
+        gctx.lineWidth = 26;
+        gctx.beginPath();
+        gctx.moveTo(s * 0.34, s * 0.46); gctx.lineTo(s * 0.34, s * 0.66);
+        gctx.moveTo(s * 0.24, s * 0.56); gctx.lineTo(s * 0.44, s * 0.56);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.arc(s * 0.64, s * 0.60, 18, 0, Math.PI * 2);
+        gctx.arc(s * 0.75, s * 0.52, 18, 0, Math.PI * 2);
+        gctx.fill();
+        break;
+
+      case 'camera':
+        // Camera with lens & flash
+        gctx.lineWidth = 36;
+        gctx.beginPath();
+        gctx.moveTo(s * 0.20, s * 0.40);
+        gctx.lineTo(s * 0.38, s * 0.40);
+        gctx.lineTo(s * 0.44, s * 0.30);
+        gctx.lineTo(s * 0.56, s * 0.30);
+        gctx.lineTo(s * 0.62, s * 0.40);
+        gctx.lineTo(s * 0.80, s * 0.40);
+        gctx.arcTo(s * 0.86, s * 0.40, s * 0.86, s * 0.46, 22);
+        gctx.lineTo(s * 0.86, s * 0.74);
+        gctx.arcTo(s * 0.86, s * 0.80, s * 0.80, s * 0.80, 22);
+        gctx.lineTo(s * 0.20, s * 0.80);
+        gctx.arcTo(s * 0.14, s * 0.80, s * 0.14, s * 0.74, 22);
+        gctx.lineTo(s * 0.14, s * 0.46);
+        gctx.arcTo(s * 0.14, s * 0.40, s * 0.20, s * 0.40, 22);
+        gctx.closePath();
+        gctx.stroke();
+
+        gctx.lineWidth = 32;
+        gctx.beginPath();
+        gctx.ellipse(s * 0.50, s * 0.60, s * 0.14, s * 0.17, 0, 0, Math.PI * 2);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.arc(s * 0.75, s * 0.48, 14, 0, Math.PI * 2);
+        gctx.fill();
+        break;
+
+      case 'assets':
+        // 3D Package / Box
+        gctx.lineWidth = 34;
+        gctx.beginPath();
+        gctx.moveTo(s * 0.50, s * 0.22);
+        gctx.lineTo(s * 0.82, s * 0.38);
+        gctx.lineTo(s * 0.82, s * 0.70);
+        gctx.lineTo(s * 0.50, s * 0.86);
+        gctx.lineTo(s * 0.18, s * 0.70);
+        gctx.lineTo(s * 0.18, s * 0.38);
+        gctx.closePath();
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.moveTo(s * 0.50, s * 0.22);
+        gctx.lineTo(s * 0.50, s * 0.54);
+        gctx.lineTo(s * 0.18, s * 0.38);
+        gctx.moveTo(s * 0.50, s * 0.54);
+        gctx.lineTo(s * 0.82, s * 0.38);
+        gctx.moveTo(s * 0.50, s * 0.54);
+        gctx.lineTo(s * 0.50, s * 0.86);
+        gctx.stroke();
+        break;
+
+      case 'materials':
+        // Shading / Material sphere
+        gctx.lineWidth = 36;
+        gctx.beginPath();
+        gctx.arc(s * 0.50, s * 0.50, s * 0.30, 0, Math.PI * 2);
+        gctx.stroke();
+
+        gctx.lineWidth = 24;
+        gctx.beginPath();
+        gctx.arc(s * 0.50, s * 0.50, s * 0.18, -0.65 * Math.PI, 0.05 * Math.PI, false);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.arc(s * 0.38, s * 0.38, 18, 0, Math.PI * 2);
+        gctx.fill();
+        break;
+
+      case 'web':
+        // Web / Globe
+        gctx.lineWidth = 34;
+        gctx.beginPath();
+        gctx.arc(s * 0.50, s * 0.50, s * 0.30, 0, Math.PI * 2);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.ellipse(s * 0.50, s * 0.50, s * 0.14, s * 0.30, 0, 0, Math.PI * 2);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.moveTo(s * 0.20, s * 0.50);
+        gctx.lineTo(s * 0.80, s * 0.50);
+        gctx.stroke();
+        break;
+
+      case 'smiley':
+      default:
+        // Main Group Smiley Face
+        gctx.lineWidth = 38;
+        gctx.beginPath();
+        gctx.arc(s * 0.50, s * 0.46, s * 0.27, 0.15 * Math.PI, 0.85 * Math.PI, false);
+        gctx.stroke();
+
+        gctx.beginPath();
+        gctx.ellipse(s * 0.35, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
+        gctx.ellipse(s * 0.65, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
+        gctx.fill();
+        break;
     }
+
     glyphCache[group.id] = c;
     return c;
   }
