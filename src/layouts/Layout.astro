@@ -95,6 +95,8 @@ const { title = "USD WG - OpenUSD Working Group" } = Astro.props;
       <nav class="flex items-center gap-2 flex-wrap">
         <a href="#groups" class="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium">Working Groups</a>
         <span class="text-zinc-300">/</span>
+<a href={`${import.meta.env.BASE_URL.replace(/\/?$/, '/')}calendar`} class="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium">Calendar</a>
+        <span class="text-zinc-300">/</span>
         <a href="#specs" class="px-2.5 py-1 rounded-md text-zinc-700 hover:bg-zinc-100 font-medium">Spec & Schemas</a>
         <span class="text-zinc-300">/</span>
         <a href="/" class="px-2.5 py-1 rounded-md text-blue-600 bg-blue-50 font-semibold">Blog Archive</a>
