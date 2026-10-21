@@ -10,12 +10,12 @@ const recentPosts = (await getCollection('blog'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 2);
 
-const subGroups = [
+const workingGroups = [
   {
     id: 'camera',
     title: 'Camera',
     tag: 'wg-usd-camera',
-    objective: 'Standardizing a unified, physically-accurate Camera schema to streamline CG and virtual production pipelines.',
+    objective: 'Standardizing a unified, physically-accurate Camera schema to streamline CG, visual effects, and virtual production workflows.',
     slack: 'https://aswf.slack.com/messages/wg-usd-camera',
     accent: 'border-sky-200 bg-sky-50 text-sky-800'
   },
@@ -23,7 +23,7 @@ const subGroups = [
     id: 'assets',
     title: 'Assets',
     tag: 'wg-usd-assets',
-    objective: 'Guiding asset interchange, structuring, and URI resolution to strengthen the "Universal" in USD.',
+    objective: 'Guiding asset interchange, structuring, and URI resolution to strengthen the foundational "Universal" in USD across studios and DCCs.',
     slack: 'https://aswf.slack.com/messages/wg-usd-assets',
     accent: 'border-emerald-200 bg-emerald-50 text-emerald-800'
   },
@@ -52,10 +52,55 @@ const subGroups = [
     accent: 'border-blue-200 bg-blue-50 text-blue-800'
   }
 ];
+
+const projects = [
+  {
+    name: 'USD Web View',
+    repo: 'https://github.com/usd-wg/usd-wg-webview',
+    tag: 'WebAssembly & Three.js',
+    accent: 'border-blue-200 bg-blue-50 text-blue-800',
+    summary: 'A browser-based inspection and rendering environment that parses USD files entirely client-side with a WebAssembly build of OpenUSD, rendering meshes, animations, and 3D Gaussian splats in Three.js.',
+    links: [
+      { label: 'GitHub Repository', url: 'https://github.com/usd-wg/usd-wg-webview' }
+    ]
+  },
+  {
+    name: 'OpenUSD Assets Repository',
+    repo: 'https://github.com/usd-wg/assets',
+    tag: 'Test Suites & Schemas',
+    accent: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+    summary: 'A structured asset repository offering pipeline documentation, schema-specific unit tests (with expected reference images and deliberately malformed samples), and production-style benchmark assets.',
+    links: [
+      { label: 'GitHub Repository', url: 'https://github.com/usd-wg/assets' },
+      { label: 'Interactive Asset Viewer', url: 'https://usd-assets.needle.tools/' }
+    ]
+  },
+  {
+    name: 'Collective Project 001 ("Odie")',
+    repo: 'https://github.com/usd-wg/collectiveproject001',
+    tag: 'Open-Source Production',
+    accent: 'border-purple-200 bg-purple-50 text-purple-800',
+    summary: 'A community-driven short animated vignette featuring "Odie" from O3DE, uniting cross-platform open-source artists to test USD DCC fragments, offline Hydra render delegates (Storm), and real-time engine parity.',
+    links: [
+      { label: 'GitHub Repository', url: 'https://github.com/usd-wg/collectiveproject001' },
+      { label: 'O3DE Foundation', url: 'https://o3de.org/' }
+    ]
+  },
+  {
+    name: 'USDZ Bakeoff',
+    repo: 'https://github.com/usd-wg/USDZ_bakeoff',
+    tag: 'Community Tradition',
+    accent: 'border-amber-200 bg-amber-50 text-amber-800',
+    summary: 'The annual community bakeoff where participants physically bake real treats, 3D scan them into photorealistic USDZ assets, and present them live for audience awards ("Baker\'s Apprentice" and "Baker\'s Choice").',
+    links: [
+      { label: 'GitHub Repository', url: 'https://github.com/usd-wg/USDZ_bakeoff' }
+    ]
+  }
+];
 ---
 
 <Layout title="USD WG - Academy Software Foundation">
-  <div class="space-y-12">
+  <div class="space-y-20 sm:space-y-24">
     <!-- Hero / Mission Statement -->
     <section class="bg-white rounded-2xl border border-zinc-200 p-8 sm:p-12 shadow-xs">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 text-zinc-700 border border-zinc-200 mb-6 font-mono">
@@ -103,18 +148,18 @@ const subGroups = [
       </div>
     </section>
 
-    <!-- Sub-Working Groups Grid -->
-    <section id="subgroups" class="space-y-6">
-      <div class="flex items-center justify-between border-b border-zinc-200 pb-3">
+    <!-- 1. Working Groups (FIRST) -->
+    <section id="working-groups" class="pt-4 space-y-8">
+      <div class="flex items-center justify-between border-b border-zinc-200 pb-4">
         <div>
-          <h2 class="text-xl font-bold text-zinc-900">Interest &amp; Sub-Working Groups</h2>
-          <p class="text-sm text-zinc-500 mt-0.5">Specialized tracks focusing on targeted schema proposals and pipeline interoperability.</p>
+          <h2 class="text-2xl font-extrabold text-zinc-900 tracking-tight">Working Groups</h2>
+          <p class="text-sm text-zinc-500 mt-1">Specialized focus areas driving schemas, APIs, and interoperability across the ecosystem.</p>
         </div>
         <span class="text-xs font-mono text-zinc-400 hidden sm:inline">5 Active Focus Areas</span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {subGroups.map((group) => (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {workingGroups.map((group) => (
           <div class="bg-white rounded-xl border border-zinc-200 p-6 flex flex-col justify-between hover:border-zinc-300 transition-all shadow-xs">
             <div>
               <div class="flex items-center justify-between gap-2 mb-3">
@@ -145,24 +190,81 @@ const subGroups = [
       </div>
     </section>
 
-    <!-- Recent Technical Notes Teaser Section -->
+    <!-- 2. Working Group Projects (SECOND) -->
+    <section id="projects" class="pt-6 space-y-8">
+      <div class="flex items-center justify-between border-b border-zinc-200 pb-4">
+        <div>
+          <h2 class="text-2xl font-extrabold text-zinc-900 tracking-tight">Working Group Projects</h2>
+          <p class="text-sm text-zinc-500 mt-1">Open-source tooling, test asset suites, and community creative initiatives hosted on GitHub.</p>
+        </div>
+        <a
+          href="https://github.com/usd-wg"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-xs font-mono text-zinc-500 hover:text-zinc-900 hidden sm:inline"
+        >
+          github.com/usd-wg &rarr;
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {projects.map((proj) => (
+          <div class="bg-white rounded-xl border border-zinc-200 p-6 sm:p-7 flex flex-col justify-between hover:border-zinc-300 transition-all shadow-xs">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3">
+                <h3 class="font-bold text-zinc-900 text-lg">
+                  <a href={proj.repo} target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 transition-colors">
+                    {proj.name}
+                  </a>
+                </h3>
+                <span class={`text-[11px] font-mono px-2 py-0.5 rounded border ${proj.accent}`}>
+                  {proj.tag}
+                </span>
+              </div>
+              <p class="text-sm text-zinc-600 leading-relaxed mb-6">
+                {proj.summary}
+              </p>
+            </div>
+
+            <div class="pt-4 border-t border-zinc-100 flex items-center justify-between gap-3 text-xs flex-wrap">
+              <div class="flex items-center gap-3">
+                {proj.links.map((link) => (
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                  >
+                    <span>{link.label}</span>
+                    <span>&rarr;</span>
+                  </a>
+                ))}
+              </div>
+              <span class="text-zinc-400 font-mono text-[11px]">usd-wg</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 3. Recent Technical Notes Teaser Section -->
     {recentPosts.length > 0 && (
-      <section class="space-y-4">
-        <div class="flex items-center justify-between border-b border-zinc-200 pb-3">
+      <section class="pt-6 space-y-6">
+        <div class="flex items-center justify-between border-b border-zinc-200 pb-4">
           <div>
-            <h2 class="text-xl font-bold text-zinc-900">Recent Technical Working Notes</h2>
-            <p class="text-sm text-zinc-500 mt-0.5">Latest architectural proposals and schema write-ups.</p>
+            <h2 class="text-2xl font-extrabold text-zinc-900 tracking-tight">Recent Technical Working Notes</h2>
+            <p class="text-sm text-zinc-500 mt-1">Latest architectural proposals, runtime notes, and schema drafts.</p>
           </div>
           <a href={`${baseUrl}blog`} class="text-xs font-semibold text-blue-600 hover:underline">
             View all ({recentPosts.length}+) &rarr;
           </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           {recentPosts.map((post) => (
             <a
               href={`${baseUrl}blog/${post.id}`}
-              class="block bg-white p-6 rounded-xl border border-zinc-200 hover:border-blue-400 hover:shadow-xs transition-all group"
+              class="block bg-white p-6 sm:p-7 rounded-xl border border-zinc-200 hover:border-blue-400 hover:shadow-xs transition-all group"
             >
               <div class="flex items-center justify-between text-xs text-zinc-400 mb-2 font-mono">
                 <span class="text-purple-700 font-bold uppercase font-sans">{post.data.group}</span>
@@ -180,11 +282,11 @@ const subGroups = [
       </section>
     )}
 
-    <!-- Get Involved & Community Callout -->
-    <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- 4. Get Involved & Community Callout -->
+    <section class="pt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
       <div class="bg-zinc-50 rounded-2xl border border-zinc-200 p-6 sm:p-8 flex flex-col justify-between">
         <div>
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-4">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-4 font-mono">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
             Bi-Weekly Community Sync
           </div>
