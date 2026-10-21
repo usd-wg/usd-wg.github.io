@@ -1,0 +1,49 @@
+---
+// src/pages/index.astro
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+---
+
+<Layout title="USD WG - Technical Notes & Specs">
+  <div class="space-y-8">
+    <div class="border-b border-zinc-200 pb-4 flex items-center justify-between">
+      <h1 class="text-xs font-bold uppercase tracking-wider text-zinc-400 font-mono">Working Group Technical Notes</h1>
+      <span class="text-xs font-mono text-zinc-500">Spec: OpenUSD 24.11+</span>
+    </div>
+
+    {posts.map(post => (
+      <article class="bg-white rounded-2xl border border-zinc-200 p-6 sm:p-8 shadow-xs hover:border-zinc-300 transition-colors">
+        <div class="flex items-center gap-2 mb-3 text-xs">
+          <span class="px-2.5 py-0.5 rounded-full font-semibold bg-purple-100 text-purple-800 border border-purple-200 uppercase font-mono">
+            {post.data.group}
+          </span>
+          <span class="text-zinc-400">•</span>
+          <time class="text-zinc-500 font-mono">
+            {post.data.pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+          </time>
+        </div>
+
+        <h2 class="text-xl sm:text-2xl font-extrabold text-zinc-900 mb-2">
+          <a href={`/blog/${post.id}`} class="hover:text-blue-600 transition-colors">
+            {post.data.title}
+          </a>
+        </h2>
+
+        <p class="text-zinc-600 leading-relaxed text-sm mb-4">
+          {post.data.description}
+        </p>
+
+        <div class="flex items-center justify-between text-xs pt-4 border-t border-zinc-100">
+          <span class="text-zinc-500">By {post.data.author}</span>
+          <a href={`/blog/${post.id}`} class="font-semibold text-blue-600 hover:text-blue-700">
+            Read note &rarr;
+          </a>
+        </div>
+      </article>
+    ))}
+  </div>
+</Layout>

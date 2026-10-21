@@ -1,0 +1,35 @@
+---
+// src/pages/blog/[...slug].astro
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Layout title={`${post.data.title} - USD WG`}>
+  <article class="bg-white rounded-2xl border border-zinc-200 p-6 sm:p-10 shadow-xs prose prose-zinc max-w-none">
+    <div class="flex items-center gap-2 mb-4 text-xs font-mono not-prose">
+      <span class="px-2.5 py-0.5 rounded-full font-semibold bg-purple-100 text-purple-800 border border-purple-200 uppercase">
+        {post.data.group}
+      </span>
+      <span class="text-zinc-400">•</span>
+      <time class="text-zinc-500">{post.data.pubDate.toISOString().slice(0,10)}</time>
+    </div>
+
+    <h1 class="text-3xl font-extrabold text-zinc-900 mb-4 not-prose">{post.data.title}</h1>
+    <p class="text-lg text-zinc-600 mb-8 not-prose">{post.data.description}</p>
+
+    <div class="border-t border-zinc-100 pt-6">
+      <Content />
+    </div>
+  </article>
+</Layout>

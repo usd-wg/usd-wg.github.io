@@ -1,0 +1,379 @@
+---
+// src/components/TesseractLogo.astro
+---
+
+<div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-zinc-50 border border-zinc-200 overflow-hidden flex items-center justify-center shadow-xs">
+  <canvas id="usdwgCanvas" class="w-full h-full block cursor-pointer" title="USD WG 4D Tesseract Logo (Click to pause/resume)"></canvas>
+  <div class="absolute bottom-1 right-1 pointer-events-none text-[9px] font-mono text-zinc-400 select-none">4D</div>
+</div>
+
+<script>
+  // --- 4D ROTATION AND SIMULATION CONSTANTS ---
+  const ENGINE_CONFIG = {
+    DEFAULT_PLANE: 'ZW',           // Spins about ZW
+    TUMBLE_VELOCITY: 1.0,          // 1.0 tumble velocity constant
+    CROSS_FADE_DURATION: 330,      // 0.33s color transition duration
+    GLYPH_CANVAS_SIZE: 512,        // Texture resolution
+    BLUE_TINT_DENSITY: 0.18        // +10% denser blue tint multiplier
+  };
+
+  const WORKING_GROUPS = [
+    { id: 'games', name: 'games', primaryColor: '#8B5CF6', badgeBg: 'bg-purple-100', badgeText: 'text-purple-800', badgeBorder: 'border-purple-200', badgeDot: 'bg-purple-600', glyphType: 'games' },
+    { id: 'camera', name: 'camera', primaryColor: '#00A3E0', badgeBg: 'bg-sky-100', badgeText: 'text-sky-800', badgeBorder: 'border-sky-200', badgeDot: 'bg-sky-600', glyphType: 'camera' },
+    { id: 'assets', name: 'assets', primaryColor: '#10B981', badgeBg: 'bg-emerald-100', badgeText: 'text-emerald-800', badgeBorder: 'border-emerald-200', badgeDot: 'bg-emerald-600', glyphType: 'assets' },
+    { id: 'materials', name: 'materials', primaryColor: '#EC4899', badgeBg: 'bg-pink-100', badgeText: 'text-pink-800', badgeBorder: 'border-pink-200', badgeDot: 'bg-pink-600', glyphType: 'materials' },
+    { id: 'web', name: 'web', primaryColor: '#3B82F6', badgeBg: 'bg-blue-100', badgeText: 'text-blue-800', badgeBorder: 'border-blue-200', badgeDot: 'bg-blue-600', glyphType: 'web' },
+    { id: 'main', name: 'main', primaryColor: '#F59E0B', badgeBg: 'bg-amber-100', badgeText: 'text-amber-800', badgeBorder: 'border-amber-200', badgeDot: 'bg-amber-600', glyphType: 'smiley' }
+  ];
+
+  const TESSERACT_VERTICES: number[][] = [];
+  for (let i = 0; i < 16; i++) {
+    TESSERACT_VERTICES.push([
+      (i & 1) ? 1 : -1,
+      (i & 2) ? 1 : -1,
+      (i & 4) ? 1 : -1,
+      (i & 8) ? 1 : -1
+    ]);
+  }
+
+  const TESSERACT_EDGES: [number, number][] = [];
+  for (let i = 0; i < 16; i++) {
+    for (let j = i + 1; j < 16; j++) {
+      const diff = i ^ j;
+      if (diff === 1 || diff === 2 || diff === 4 || diff === 8) {
+        TESSERACT_EDGES.push([i, j]);
+      }
+    }
+  }
+
+  const TESSERACT_FACES: number[][] = [];
+  const axesPairs = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
+  axesPairs.forEach(([a1, a2]) => {
+    const fixedAxes = [0, 1, 2, 3].filter(a => a !== a1 && a !== a2);
+    const b1 = fixedAxes[0];
+    const b2 = fixedAxes[1];
+    for (const valB1 of [0, 1]) {
+      for (const valB2 of [0, 1]) {
+        const v00 = (valB1 << b1) | (valB2 << b2);
+        const v10 = v00 | (1 << a1);
+        const v11 = v00 | (1 << a1) | (1 << a2);
+        const v01 = v00 | (1 << a2);
+        TESSERACT_FACES.push([v00, v10, v11, v01]);
+      }
+    }
+  });
+
+  function hexToRgb(hex: string) {
+    const c = hex.replace('#', '');
+    return {
+      r: parseInt(c.substring(0, 2), 16),
+      g: parseInt(c.substring(2, 4), 16),
+      b: parseInt(c.substring(4, 6), 16)
+    };
+  }
+
+  function interpolateColorFromTint(baseRgb: { r: number; g: number; b: number; a?: number }, targetHex: string, factor: number) {
+    const cTarget = hexToRgb(targetHex);
+    const r = Math.round(baseRgb.r + (cTarget.r - baseRgb.r) * factor);
+    const g = Math.round(baseRgb.g + (cTarget.g - baseRgb.g) * factor);
+    const b = Math.round(baseRgb.b + (cTarget.b - baseRgb.b) * factor);
+    const a = (baseRgb.a ?? 1.0) + (1.0 - (baseRgb.a ?? 1.0)) * factor;
+    return `rgba(${r}, ${g}, ${b}, ${a.toFixed(3)})`;
+  }
+
+  function rotate4DPoint(pt: number[], angle: number, plane: string): number[] {
+    const [x, y, z, w] = pt;
+    const c = Math.cos(angle);
+    const s = Math.sin(angle);
+    switch (plane) {
+      case 'ZW': return [x, y, z * c - w * s, z * s + w * c];
+      case 'XW': return [x * c - w * s, y, z, x * s + w * c];
+      case 'YW': return [x, y * c - w * s, z, y * s + w * c];
+      default:   return [x, y, z * c - w * s, z * s + w * c];
+    }
+  }
+
+  function project4DTo3DAnd2D(pt4d: number[], width: number, height: number) {
+    const [x4, y4, z4, w4] = pt4d;
+    const d4 = 2.4;
+    const factor4D = d4 / (d4 - w4 * 0.45);
+    const x3 = x4 * factor4D;
+    const y3 = y4 * factor4D;
+    const z3 = z4 * factor4D;
+
+    const isoAngleY = Math.PI / 4;
+    const isoAngleX = Math.asin(Math.tan(Math.PI / 6));
+
+    const cosY = Math.cos(isoAngleY);
+    const sinY = Math.sin(isoAngleY);
+    const rx1 = x3 * cosY + z3 * sinY;
+    const ry1 = y3;
+    const rz1 = -x3 * sinY + z3 * cosY;
+
+    const cosX = Math.cos(isoAngleX);
+    const sinX = Math.sin(isoAngleX);
+    const rx2 = rx1;
+    const ry2 = ry1 * cosX - rz1 * sinX;
+    const rz2 = ry1 * sinX + rz1 * cosX;
+
+    const baseScale = Math.min(width, height) * 0.235;
+    return {
+      x: width * 0.5 + rx2 * baseScale,
+      y: height * 0.5 - ry2 * baseScale,
+      z: rz2,
+      pt3d: [rx2, ry2, rz2]
+    };
+  }
+
+  function crossProduct3D(u: number[], v: number[]) {
+    return [
+      u[1] * v[2] - u[2] * v[1],
+      u[2] * v[0] - u[0] * v[2],
+      u[0] * v[1] - u[1] * v[0]
+    ];
+  }
+
+  function dotProduct3D(u: number[], v: number[]) {
+    return u[0] * v[0] + u[1] * v[1] + u[2] * v[2];
+  }
+
+  function normalize3D(v: number[]) {
+    const len = Math.hypot(v[0], v[1], v[2]);
+    return len > 0.00001 ? [v[0] / len, v[1] / len, v[2] / len] : [0, 0, 0];
+  }
+
+  function computePolygonArea2D(points: { x: number; y: number }[]) {
+    let area = 0;
+    for (let i = 0; i < points.length; i++) {
+      const j = (i + 1) % points.length;
+      area += points[i].x * points[j].y - points[j].x * points[i].y;
+    }
+    return Math.abs(area) * 0.5;
+  }
+
+  const glyphCache: Record<string, HTMLCanvasElement> = {};
+  const s = ENGINE_CONFIG.GLYPH_CANVAS_SIZE;
+
+  function getGlyphCanvas(group: typeof WORKING_GROUPS[0]) {
+    if (glyphCache[group.id]) return glyphCache[group.id];
+    const c = document.createElement('canvas');
+    c.width = s; c.height = s;
+    const gctx = c.getContext('2d')!;
+    gctx.lineCap = 'round'; gctx.lineJoin = 'round';
+    gctx.strokeStyle = '#18181b'; gctx.fillStyle = '#18181b';
+
+    if (group.glyphType === 'games') {
+      gctx.lineWidth = 36;
+      gctx.beginPath();
+      gctx.roundRect(s * 0.16, s * 0.36, s * 0.68, s * 0.40, [42]);
+      gctx.stroke();
+      gctx.lineWidth = 26;
+      gctx.beginPath();
+      gctx.moveTo(s * 0.34, s * 0.46); gctx.lineTo(s * 0.34, s * 0.66);
+      gctx.moveTo(s * 0.24, s * 0.56); gctx.lineTo(s * 0.44, s * 0.56);
+      gctx.stroke();
+      gctx.beginPath();
+      gctx.arc(s * 0.64, s * 0.60, 18, 0, Math.PI * 2);
+      gctx.arc(s * 0.75, s * 0.52, 18, 0, Math.PI * 2);
+      gctx.fill();
+    } else if (group.glyphType === 'camera') {
+      gctx.lineWidth = 36;
+      gctx.beginPath();
+      gctx.moveTo(s * 0.20, s * 0.40); gctx.lineTo(s * 0.38, s * 0.40);
+      gctx.lineTo(s * 0.44, s * 0.30); gctx.lineTo(s * 0.56, s * 0.30);
+      gctx.lineTo(s * 0.62, s * 0.40); gctx.lineTo(s * 0.80, s * 0.40);
+      gctx.arcTo(s * 0.86, s * 0.40, s * 0.86, s * 0.46, 22);
+      gctx.lineTo(s * 0.86, s * 0.74);
+      gctx.arcTo(s * 0.86, s * 0.80, s * 0.80, s * 0.80, 22);
+      gctx.lineTo(s * 0.20, s * 0.80);
+      gctx.arcTo(s * 0.14, s * 0.80, s * 0.14, s * 0.74, 22);
+      gctx.lineTo(s * 0.14, s * 0.46);
+      gctx.arcTo(s * 0.14, s * 0.40, s * 0.20, s * 0.40, 22);
+      gctx.closePath(); gctx.stroke();
+      gctx.lineWidth = 32;
+      gctx.beginPath();
+      gctx.ellipse(s * 0.50, s * 0.60, s * 0.14, s * 0.17, 0, 0, Math.PI * 2);
+      gctx.stroke();
+      gctx.beginPath();
+      gctx.arc(s * 0.75, s * 0.48, 14, 0, Math.PI * 2);
+      gctx.fill();
+    } else {
+      gctx.lineWidth = 38;
+      gctx.beginPath();
+      gctx.arc(s * 0.50, s * 0.46, s * 0.27, 0.15 * Math.PI, 0.85 * Math.PI, false);
+      gctx.stroke();
+      gctx.beginPath();
+      gctx.ellipse(s * 0.35, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
+      gctx.ellipse(s * 0.65, s * 0.38, 22, 32, 0, 0, Math.PI * 2);
+      gctx.fill();
+    }
+    glyphCache[group.id] = c;
+    return c;
+  }
+
+  function drawAffineTriangle(ctx: CanvasRenderingContext2D, img: HTMLCanvasElement,
+    sx0: number, sy0: number, sx1: number, sy1: number, sx2: number, sy2: number,
+    dx0: number, dy0: number, dx1: number, dy1: number, dx2: number, dy2: number) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(dx0, dy0); ctx.lineTo(dx1, dy1); ctx.lineTo(dx2, dy2); ctx.closePath();
+    ctx.clip();
+    const denom = (sx0 * (sy1 - sy2) - sx1 * (sy0 - sy2) + sx2 * (sy0 - sy1));
+    if (Math.abs(denom) < 0.0001) { ctx.restore(); return; }
+    const a = ((dx0 - dx1) * (sy0 - sy2) - (dx0 - dx2) * (sy0 - sy1)) / denom;
+    const b = ((dy0 - dy1) * (sy0 - sy2) - (dy0 - dy2) * (sy0 - sy1)) / denom;
+    const c = ((dx0 - dx2) * (sx0 - sx1) - (dx0 - dx1) * (sx0 - sx2)) / denom;
+    const d = ((dy0 - dy2) * (sx0 - sx1) - (dy0 - dy1) * (sx0 - sx2)) / denom;
+    const e = dx0 - a * sx0 - c * sy0;
+    const f = dy0 - b * sx0 - d * sy0;
+    ctx.transform(a, b, c, d, e, f);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+
+  function drawWarpedQuad(ctx: CanvasRenderingContext2D, img: HTMLCanvasElement,
+    p0: { x: number; y: number }, p1: { x: number; y: number }, p2: { x: number; y: number }, p3: { x: number; y: number }) {
+    const pts = [p0, p1, p2, p3];
+    const sorted = [...pts].sort((a, b) => a.y - b.y);
+    const top = [sorted[0], sorted[1]].sort((a, b) => a.x - b.x);
+    const btm = [sorted[2], sorted[3]].sort((a, b) => a.x - b.x);
+    drawAffineTriangle(ctx, img, 0, 0, s, 0, s, s, top[0].x, top[0].y, top[1].x, top[1].y, btm[1].x, btm[1].y);
+    drawAffineTriangle(ctx, img, 0, 0, s, s, 0, s, top[0].x, top[0].y, btm[1].x, btm[1].y, btm[0].x, btm[0].y);
+  }
+
+  const canvas = document.getElementById('usdwgCanvas') as HTMLCanvasElement;
+  if (canvas) {
+    const ctx = canvas.getContext('2d')!;
+    let isTumbling = true;
+    let angle4D = 0;
+    let currentGroupIndex = 0;
+    let lastFaceIdx: number | null = null;
+    let isCrossFading = false;
+    let fadeStartTime = 0;
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform();
+      ctx.scale(dpr, dpr);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    function updateBadge() {
+      const g = WORKING_GROUPS[currentGroupIndex];
+      window.dispatchEvent(new CustomEvent('usdwg:groupchange', { detail: g }));
+    }
+
+    let lastTime = performance.now();
+    function loop(t: number) {
+      const dt = (t - lastTime) * 0.001;
+      lastTime = t;
+
+      if (isTumbling) {
+        angle4D += dt * 0.75 * ENGINE_CONFIG.TUMBLE_VELOCITY;
+      }
+
+      const rect = canvas.getBoundingClientRect();
+      ctx.clearRect(0, 0, rect.width, rect.height);
+
+      const proj = TESSERACT_VERTICES.map(pt => {
+        const r = rotate4DPoint(pt, angle4D, ENGINE_CONFIG.DEFAULT_PLANE);
+        return project4DTo3DAnd2D(r, rect.width, rect.height);
+      });
+
+      const camDir = normalize3D([0, 0, 1]);
+      const scored = TESSERACT_FACES.map((indices, idx) => {
+        const [p0, p1, p2, p3] = indices.map(i => proj[i]);
+        const v1 = [p1.pt3d[0] - p0.pt3d[0], p1.pt3d[1] - p0.pt3d[1], p1.pt3d[2] - p0.pt3d[2]];
+        const v2 = [p2.pt3d[0] - p0.pt3d[0], p2.pt3d[1] - p0.pt3d[1], p2.pt3d[2] - p0.pt3d[2]];
+        const norm = normalize3D(crossProduct3D(v1, v2));
+        const dot = dotProduct3D(norm, camDir);
+        const area = computePolygonArea2D([p0, p1, p2, p3]);
+        return { idx, indices, dot, area, score: Math.max(0, dot) * area, pts: [p0, p1, p2, p3], avgZ: (p0.z + p1.z + p2.z + p3.z) * 0.25 };
+      }).sort((a, b) => a.score - b.score);
+
+      const best = scored[scored.length - 1];
+      if (lastFaceIdx !== null && lastFaceIdx !== best.idx) {
+        currentGroupIndex = (currentGroupIndex + 1) % WORKING_GROUPS.length;
+        isCrossFading = true;
+        fadeStartTime = t;
+        updateBadge();
+      }
+      lastFaceIdx = best.idx;
+
+      let factor = 1.0;
+      if (isCrossFading) {
+        factor = Math.min((t - fadeStartTime) / ENGINE_CONFIG.CROSS_FADE_DURATION, 1.0);
+        if (factor >= 1.0) isCrossFading = false;
+      }
+
+      const activeColor = interpolateColorFromTint(
+        { r: 2, g: 132, b: 199, a: ENGINE_CONFIG.BLUE_TINT_DENSITY },
+        WORKING_GROUPS[currentGroupIndex].primaryColor,
+        factor
+      );
+
+      // Draw faint blue faces
+      scored.forEach(f => {
+        if (f.idx === best.idx || f.dot <= 0.05) return;
+        ctx.beginPath();
+        ctx.moveTo(f.pts[0].x, f.pts[0].y);
+        ctx.lineTo(f.pts[1].x, f.pts[1].y);
+        ctx.lineTo(f.pts[2].x, f.pts[2].y);
+        ctx.lineTo(f.pts[3].x, f.pts[3].y);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(2, 132, 199, ${(f.dot * ENGINE_CONFIG.BLUE_TINT_DENSITY).toFixed(3)})`;
+        ctx.fill();
+      });
+
+      // Draw primary face
+      ctx.beginPath();
+      ctx.moveTo(best.pts[0].x, best.pts[0].y);
+      ctx.lineTo(best.pts[1].x, best.pts[1].y);
+      ctx.lineTo(best.pts[2].x, best.pts[2].y);
+      ctx.lineTo(best.pts[3].x, best.pts[3].y);
+      ctx.closePath();
+      ctx.fillStyle = activeColor;
+      ctx.fill();
+
+      // Draw warped glyph
+      const glyph = getGlyphCanvas(WORKING_GROUPS[currentGroupIndex]);
+      drawWarpedQuad(ctx, glyph, best.pts[0], best.pts[1], best.pts[2], best.pts[3]);
+
+      // Gray edges
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = 'rgba(128, 128, 128, 0.45)';
+      const primEdges = new Set(best.indices.map((u, i) => {
+        const v = best.indices[(i + 1) % 4];
+        return u < v ? `${u}_${v}` : `${v}_${u}`;
+      }));
+      TESSERACT_EDGES.forEach(([u, v]) => {
+        const key = u < v ? `${u}_${v}` : `${v}_${u}`;
+        if (primEdges.has(key)) return;
+        ctx.beginPath();
+        ctx.moveTo(proj[u].x, proj[u].y);
+        ctx.lineTo(proj[v].x, proj[v].y);
+        ctx.stroke();
+      });
+
+      // Bold black primary frame
+      ctx.lineWidth = 5.5;
+      ctx.strokeStyle = '#18181b';
+      ctx.beginPath();
+      ctx.moveTo(best.pts[0].x, best.pts[0].y);
+      ctx.lineTo(best.pts[1].x, best.pts[1].y);
+      ctx.lineTo(best.pts[2].x, best.pts[2].y);
+      ctx.lineTo(best.pts[3].x, best.pts[3].y);
+      ctx.closePath();
+      ctx.stroke();
+
+      requestAnimationFrame(loop);
+    }
+
+    canvas.addEventListener('click', () => { isTumbling = !isTumbling; });
+    requestAnimationFrame(loop);
+  }
+</script>
